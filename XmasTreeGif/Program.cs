@@ -109,7 +109,7 @@ namespace XmasTreeGif
                     pixelData.Add(1);
                     pixelData.Add(1);
                     pixelData.Add(1);
-                    pixelData.Add(1);
+                    pixelData.Add(2);
 
                     string result = LZW(pixelData);
 
@@ -169,7 +169,7 @@ namespace XmasTreeGif
                     w = k.ToString();
 
                     // change code size
-                    if (Math.Pow(2.0, codeSize) - 1 == dictionary.Count)
+                    if (Math.Pow(2.0, codeSize) - 1 == dictionary[w])
                     {
                         codeSize += 1.0;
                     }                    
@@ -208,7 +208,7 @@ namespace XmasTreeGif
 
                 if (working.Length == 8)
                 {
-                    returnMe.Add(System.Text.Encoding.ASCII.GetBytes(working).First());
+                    returnMe.Add(Convert.ToByte(working, 2));
                     working = string.Empty;
                 }
 
@@ -219,7 +219,7 @@ namespace XmasTreeGif
             if (working.Length < 8)
             {
                 working = working.PadLeft(8, '0');
-                returnMe.Add(System.Text.Encoding.ASCII.GetBytes(working).First());
+                returnMe.Add(Convert.ToByte(working, 2));
             }
 
             return returnMe.ToArray();
