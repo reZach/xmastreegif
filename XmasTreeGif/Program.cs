@@ -51,14 +51,35 @@ namespace XmasTreeGif
                     outputFile.Write(Convert.ToByte(0));
                     outputFile.Write(Convert.ToByte(0));
 
+                    // application extension (gives us animation)
+                    outputFile.Write(Convert.ToByte(0x21)); // gif extension code
+                    outputFile.Write(Convert.ToByte(0xff)); // application extension label
+                    outputFile.Write(Convert.ToByte(0x0b)); // length of application block (to follow)
+                    outputFile.Write(Convert.ToByte('N'));
+                    outputFile.Write(Convert.ToByte('E'));
+                    outputFile.Write(Convert.ToByte('T'));
+                    outputFile.Write(Convert.ToByte('S'));
+                    outputFile.Write(Convert.ToByte('C'));
+                    outputFile.Write(Convert.ToByte('A'));
+                    outputFile.Write(Convert.ToByte('P'));
+                    outputFile.Write(Convert.ToByte('E'));
+                    outputFile.Write(Convert.ToByte('2'));
+                    outputFile.Write(Convert.ToByte('.'));
+                    outputFile.Write(Convert.ToByte('0'));
+                    outputFile.Write(Convert.ToByte(3)); // length of data sub-block (3 bytes of data to follow)
+                    outputFile.Write(Convert.ToByte(1));
+                    outputFile.Write(Convert.ToByte(0xff)); // times the gif will loop
+                    outputFile.Write(Convert.ToByte(0xff));
+                    outputFile.Write(Convert.ToByte(0)); // data sub-block terminator
+
                     // graphic control extension
-                    //outputFile.Write(Convert.ToByte(21)); // extension introducer
-                    //outputFile.Write(Convert.ToByte(0xf9)); // graphic control label
-                    //outputFile.Write(Convert.ToByte(4)); // byte size
-                    //outputFile.Write(Convert.ToByte(0)); // packed field
-                    //outputFile.Write(Convert.ToInt16(0)); // delay time
-                    //outputFile.Write(Convert.ToByte(0)); // transparent color index
-                    //outputFile.Write(Convert.ToByte(0)); // block terminator
+                    outputFile.Write(Convert.ToByte(0x21)); // extension introducer
+                    outputFile.Write(Convert.ToByte(0xf9)); // graphic control label
+                    outputFile.Write(Convert.ToByte(4)); // byte size
+                    outputFile.Write(Convert.ToByte(4)); // packed field
+                    outputFile.Write(Convert.ToInt16(100)); // delay time, in ms
+                    outputFile.Write(Convert.ToByte(0)); // transparent color index
+                    outputFile.Write(Convert.ToByte(0)); // block terminator
 
                     // image descriptor
                     outputFile.Write(Convert.ToByte(0x2c)); // img separator character
@@ -109,9 +130,56 @@ namespace XmasTreeGif
                     pixelData.Add(1);
                     pixelData.Add(1);
                     pixelData.Add(1);
-                    pixelData.Add(2);
+                    pixelData.Add(1);
 
                     string result = LZW(pixelData);
+
+                    bytes = GetBytes(result);
+                    outputFile.Write(Convert.ToByte(2)); // lzw minimum code size
+                    outputFile.Write(Convert.ToByte(bytes.Length)); // number of bytes in sub-block
+                    for (int i = 0; i < bytes.Length; i++)
+                    {
+                        outputFile.Write(bytes[i]);
+                    }
+                    outputFile.Write(Convert.ToByte(0));
+
+
+                    // img 2
+                    // graphic control extension
+                    outputFile.Write(Convert.ToByte(0x21)); // extension introducer
+                    outputFile.Write(Convert.ToByte(0xf9)); // graphic control label
+                    outputFile.Write(Convert.ToByte(4)); // byte size
+                    outputFile.Write(Convert.ToByte(4)); // packed field
+                    outputFile.Write(Convert.ToInt16(100)); // delay time, in ms
+                    outputFile.Write(Convert.ToByte(0)); // transparent color index
+                    outputFile.Write(Convert.ToByte(0)); // block terminator
+
+                    // image descriptor
+                    outputFile.Write(Convert.ToByte(0x2c)); // img separator character
+                    outputFile.Write(Convert.ToInt16(0)); // img left position
+                    outputFile.Write(Convert.ToInt16(0)); // img top positon                    
+                    outputFile.Write(Convert.ToInt16(2)); // img width                    
+                    outputFile.Write(Convert.ToInt16(2)); // img height                    
+                    array = new BitArray(new byte[1]);
+                    array[0] = false; // local color table present
+                    array[1] = false; // img not interlaced
+                    array[2] = false; // sort flag
+                    array[5] = false; // size of local color table
+                    array[6] = false;
+                    array[7] = false;
+                    bytes = new byte[1];
+                    array.CopyTo(bytes, 0);
+                    outputFile.Write(bytes);
+
+
+                    // image data; lzw                    
+                    pixelData = new List<int>();
+                    pixelData.Add(2);
+                    pixelData.Add(2);
+                    pixelData.Add(2);
+                    pixelData.Add(2);
+
+                    result = LZW(pixelData);
 
                     bytes = GetBytes(result);
                     outputFile.Write(Convert.ToByte(2)); // lzw minimum code size
