@@ -27,7 +27,7 @@ namespace XmasTreeGif
 
                     BitArray array = new BitArray(new byte[1]);
                     array[7] = true; // global color table flag
-                    array[6] = false; array[5] = false; array[4] = true; // color resolution
+                    array[6] = true; array[5] = true; array[4] = true; // color resolution
                     array[3] = false; // sort flag
                     array[2] = false; array[1] = false; array[0] = true; // global color table size
                     byte[] bytes = new byte[1];
@@ -195,6 +195,7 @@ namespace XmasTreeGif
             }
         }
 
+
         // https://rosettacode.org/wiki/LZW_compression#C.23
         static string LZW(List<int> pixelImageData)
         {
@@ -291,6 +292,318 @@ namespace XmasTreeGif
             }
 
             return returnMe.ToArray();
+        }
+    }
+
+    public struct Pixel
+    {
+        public byte Red;
+        public byte Green;
+        public byte Blue;        
+    }
+
+    public struct Frame
+    {
+        public ushort AnimationDelay;
+        public List<Pixel> Pixels;
+
+        public int Width;
+        public int Height;
+        public int WidthOffset;
+        public int HeightOffset;
+    }
+
+    public class GIFMaker
+    {
+        private DirectoryInfo _outputPath;
+        private List<Pixel> _colorTable;
+        private List<Frame> _frames;
+
+        public ushort Width;
+        public ushort Height;
+        public bool ShouldRepeat;
+
+        public GIFMaker()
+        {
+            _outputPath = new DirectoryInfo(AppContext.BaseDirectory);
+            _colorTable = new List<Pixel>();
+        }
+
+        public void CreateGIF()
+        {
+            if (!_colorTable.Any())
+            {
+                throw new Exception("GIFMaker has no color table!");
+            }
+            if (!_frames.Any())
+            {
+                throw new Exception("GIFMaker has no frames!");
+            }
+
+
+            // Create the .GIF
+            using (FileStream fileStream = new FileStream("", FileMode.Create))
+            using (BinaryWriter output = new BinaryWriter(fileStream))
+            {
+                output.Seek(0, SeekOrigin.Begin);
+
+                WriteHeader(output);
+                WriteLogicalScreenDescriptor(output);
+                WriteApplicationExtension(output, ShouldRepeat);
+
+                // Need to write these values for each frame
+                for (int i = 0; i < _frames.Count; i++)
+                {
+                    WriteGraphicControlExtension(output, _frames[i].AnimationDelay);
+                    WriteImageDescriptor(output, _frames[i]);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Writes the header section for the .GIF file.
+        /// </summary>
+        /// <param name="output"></param>
+        private void WriteHeader(BinaryWriter output)
+        {
+            // GIFs must start with a header block;
+            // The first 3 bytes must be "GIF",
+            // the next 3 bytes must be the version
+            // that we are encoding the .GIF in ("87a" or "89a")
+            output.Write(new char[3] { 'G', 'I', 'F' });                  
+            output.Write(new char[3] { '8', '9', 'a' });
+        }
+
+        /// <summary>
+        ///     Writes the logical screen descriptor section for the .GIF file.
+        /// </summary>
+        /// <param name="output"></param>
+        private void WriteLogicalScreenDescriptor(BinaryWriter output)
+        {
+            // The logical screen descriptor holds global values
+            // for our .GIF file
+            //
+            // The first 2 bytes are the width of the canvas (the entire .GIF)
+            // The second 2 bytes are the height of the canvas
+            // The next byte is a packed byte:
+            //      The first 3 bits are the size of the global color table
+            //          (ex.  if these 3 bits equal "1" in binary, the global color table holds 2^(n+1) colors)
+            //          (aka. if these 3 bits equal "1" in binary, we can use a total of 4 colors in our .GIF)
+            //      The next bit is if the colors in the global color table are sorted in decreasing frequency in the image
+            //          (this helps speed up decoding the .GIF; can stay at "0")
+            //      The next 3 bits are the color resolution of the image 
+            //          (color resolution == number of bits per primary color available to the original image, minus 1)
+            //      The last bit is if we have a global color table (1 = yes, 0 = no)
+            // The next byte is the background color index (the index of the color from the global color table)
+            // The last byte is the pixel aspect ratio
+
+            output.Write(Width);
+            output.Write(Height);
+
+            // Packed field
+            BitArray array = new BitArray(new byte[1]);
+            BitArray GCTS = LogicalScreenDescriptorGlobalColorTableSize();
+            array[2] = GCTS[1]; array[1] = GCTS[1]; array[0] = GCTS[0]; // Global color table size
+            array[3] = false; // Sort flag
+            array[6] = true; array[5] = true; array[4] = true; // Color resolution (64 colors)
+            array[7] = true; // Global color table flag ("1" since we are using a global color table)
+
+            byte[] bytes = new byte[1];
+            array.CopyTo(bytes, 0);
+            output.Write(bytes);
+
+            output.Write((byte)0); // Background color index
+            output.Write((byte)0); // Pixel aspect ratio
+        }
+
+        private BitArray LogicalScreenDescriptorGlobalColorTableSize()
+        {
+            // Global color table size is directly related to the number
+            // of colors we can have in our .GIF. A .GIF can hold anywhere
+            // between 2-256 colors, and has this relationship between the
+            // global color table size
+            //
+            //      GCTS | Total colors available
+            //      0      2
+            //      1      4
+            //      2      8
+            //      3      16
+            //      4      32
+            //      5      64
+            //      6      128
+            //      7      256
+            //
+            // Where:
+            //      total colors available = 2^(GCTS+1)
+            //
+            // We will perform the inverse since we know the
+            // colors we want to use
+
+            byte ret = 1;
+
+            // log2(total colors) - 1
+            ret = (byte)Math.Round(Math.Log((double)_colorTable.Count, 2.0) - 1.0);
+
+            return new BitArray(new byte[1] { ret });
+        }
+
+        private void WriteGlobalColorTable(BinaryWriter output)
+        {            
+            // The global color table includes all colors the .GIF
+            // will use, in this format (where "C" means color):
+            //      C1 red value, C1 green value, C1 blue value, 
+            //      C2 red value, C2 green value, C2 blue value, 
+            //      ...
+            
+            for (int i = 0; i < _colorTable.Count; i++)
+            {
+                output.Write(_colorTable[i].Red);
+                output.Write(_colorTable[i].Green);
+                output.Write(_colorTable[i].Blue);
+            }
+        }
+
+        /// <summary>
+        ///     Writes the application extension section for the .GIF file.
+        /// </summary>
+        /// <param name="output"></param>
+        private void WriteApplicationExtension(BinaryWriter output, bool shouldRepeat)
+        {
+            // This section allows us to animate our .GIF file.
+            // Without this section, our .GIF would play through
+            // once and stop.
+            //
+            // The first byte is the extension code, this "extension" code
+            //      (extension codes are specific to the 89a .GIF specification, as opposed to the 87a specification)
+            // The second byte says this extension is an application extension "0xff"
+            // The third byte is the length of the application extension (fixed value, "0x0b")
+            // The next 8 bytes are "NETSCAPE" - this is the application identifier
+            // The next 3 bytes are "2.0" - this is the application authentication code
+            // The next byte is a "3" - the length of the bytes to follow
+            // The next byte is a "1"
+            // The next 2 bytes are how many times the .GIF file should loop in the animation
+            // The last byte is a termination character
+
+            output.Write((byte)0x21); // GIF extension code
+            output.Write((byte)0xff); // Application extension label
+            output.Write((byte)0x0b); // Length of application block (to follow)
+            output.Write('N');
+            output.Write('E');
+            output.Write('T');
+            output.Write('S');
+            output.Write('C');
+            output.Write('A');
+            output.Write('P');
+            output.Write('E');
+            output.Write('2');
+            output.Write('.');
+            output.Write('0');
+            output.Write((byte)3); // Length of data sub-block (3 bytes of data to follow)
+            output.Write((byte)1);
+
+            if (shouldRepeat)
+            {
+                output.Write((byte)0xff); // Times the GIF will loop
+                output.Write((byte)0xff);
+            }
+            else
+            {
+                output.Write((byte)0);
+                output.Write((byte)0);
+            }
+            
+            output.Write((byte)0); // Data sub-block terminator
+        }
+
+        /// <summary>
+        ///     Writes the graphic control extension section for the .GIF file.
+        ///     This section is optional for each frame of your .GIF file if you
+        ///     are not animating your .GIF file with multiple frames.
+        /// </summary>
+        /// <param name="output"></param>
+        /// <param name="delay"></param>
+        private void WriteGraphicControlExtension(BinaryWriter output, ushort delay)
+        {
+            // The graphic control extension allows us to control
+            // aspects related to our .GIF's animation.
+            //
+            // The first byte is the extension code, this "extension" code
+            // The second byte says this extension is a graphics control extension "0xf9"
+            // The third byte is the byte size (this should stay at 4)
+            // The fourth byte is a packed byte:
+            //      The first bit is if we want to make our transparent color index, transparent
+            //          (the transparent color index is an index of the global color table we want to make transparent)
+            //      The second bit is if we require user input before moving to the next frame in an animated .GIF
+            //      The next three bits are the disposal method - which defines what happens to the current image before we move onto the next
+            //          (a value of "1" indicates the image should remain in place, and draw the next image over it)
+            //          (a value of "2" indicates the canvas should be restored to the background color (as indicated in the logical screen descriptor))
+            //          (a value of "3" indicates the canvas should restore state to the previous state before the current image was drawn)
+            //      The next three bits are reserved and not used as of today
+            // The next 2 bytes are the value in centiseconds should wait before moving onto the next frame
+            //      (100 centiseconds = 1 second)
+            // The next byte is the transparent color index (that matches a color in the global color table)
+            // The last byte is a termination character
+            
+            output.Write((byte)0x21); // GIF extension code
+            output.Write((byte)0xf9); // Graphic control extension label
+            output.Write((byte)4); // Byte size
+
+            // Packed field
+            BitArray array = new BitArray(new byte[1]);
+            array[0] = false; // Transparent color flag
+            array[1] = false; // User input flag
+            array[4] = false; array[3] = false; array[2] = true; // Disposal method            
+
+            byte[] bytes = new byte[1];
+            array.CopyTo(bytes, 0);
+            output.Write(bytes);
+
+            output.Write(delay); // Delay time, in centiseconds
+            output.Write((byte)0); // Transparent color index
+            output.Write((byte)0); // Block terminator
+        }
+
+        /// <summary>
+        ///     Writes the image descriptor section for the .GIF file.
+        ///     This section is necessary for each frame of your .GIF file.
+        /// </summary>
+        /// <param name="output"></param>
+        private void WriteImageDescriptor(BinaryWriter output, Frame frame)
+        {
+            // The image descriptor contains information of
+            // how large and where the frame's pixels will
+            // be drawn on the canvas
+            //
+            // The first byte is an image separator character, and must always be 0x2c
+            // The next 2 bytes are at what x position from the origin of the canvas will the image begin at
+            // The next 2 bytes are at what y position from the origin of the canvas will the image begin at
+            //      (note. the origin of the canvas is at the top-left of the canvas)
+            // The next 2 bytes are the width of the frame
+            // The next 2 bytes are the height of the frame
+            // The last byte is a packed byte:
+            //      The first 3 bits are the size of the local color table
+            //      The next 2 bits are reserved for future use
+            //      The next bit is if the colors in the local color table are sorted in decreasing frequency in the image
+            //          (this helps speed up decoding the .GIF; can stay at "0")
+            //      The next bit is for the interlace flag? ("0" is a default value)
+            //      The last bit is if we are using a local color table for the upcoming image
+            //          (local color tables take precedence over global color tables if they are present)            
+
+            output.Write(Convert.ToByte(0x2c)); // Image separator character
+            output.Write(frame.WidthOffset); // Image left position
+            output.Write(frame.HeightOffset); // Image top positon                    
+            output.Write(frame.Width); // Image width                    
+            output.Write(frame.Height); // Image height     
+
+            // Packed field
+            BitArray array = new BitArray(new byte[1]);
+            array[7] = false; array[6] = false; array[5] = false; // Size of local color table
+            array[2] = false; // Sort flag
+            array[1] = false; // Interlace flag
+            array[0] = false; // Local color table flag
+            byte[] bytes = new byte[1];
+            array.CopyTo(bytes, 0);
+            output.Write(bytes);
         }
     }
 }
