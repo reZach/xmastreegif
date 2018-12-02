@@ -12,6 +12,75 @@ namespace XmasTreeGif
 
         static void Main(string[] args)
         {
+            List<Pixel> colorTable = new List<Pixel>
+            {
+                new Pixel
+                {
+                    Red = 255,
+                    Green = 255,
+                    Blue = 255
+                },
+                new Pixel
+                {
+                    Red = 255,
+                    Green = 0,
+                    Blue = 0
+                },
+                new Pixel
+                {
+                    Red = 0,
+                    Green = 0,
+                    Blue = 255
+                },
+                new Pixel
+                {
+                    Red = 0,
+                    Green = 0,
+                    Blue = 0
+                }
+            };
+            List<Frame> frames = new List<Frame>
+            {
+                new Frame
+                {
+                    Width = 2,
+                    Height = 2,
+                    AnimationDelay = 100,
+                    Pixels = new List<Pixel>
+                    {
+                        colorTable[0],
+                        colorTable[0],
+                        colorTable[0],
+                        colorTable[0]
+                    }
+                },
+                new Frame
+                {
+                    Width = 2,
+                    Height = 2,
+                    AnimationDelay = 100,
+                    Pixels = new List<Pixel>
+                    {
+                        colorTable[1],
+                        colorTable[1],
+                        colorTable[1],
+                        colorTable[1]
+                    }
+                }
+            };
+            GIFMaker maker = new GIFMaker
+            {
+                fileOutputPath = @"D:\income\xmas tree gif\XmasTreeGif\XmasTreeGif\file2.gif",
+                Width = 2,
+                Height = 2,
+                ShouldRepeat = true,
+                ColorTable = colorTable,
+                Frames = frames
+            };
+
+            maker.CreateGIF();
+            return;
+
             using (FileStream fs = new FileStream(@"C:\proj\xmas tree gif\XmasTreeGif\XmasTreeGif\file.gif", FileMode.Create))
             {
                 using (BinaryWriter outputFile = new BinaryWriter(fs))
@@ -307,38 +376,39 @@ namespace XmasTreeGif
         public ushort AnimationDelay;
         public List<Pixel> Pixels;
 
-        public int Width;
-        public int Height;
-        public int WidthOffset;
-        public int HeightOffset;
+        public ushort Width;
+        public ushort Height;
+        public ushort WidthOffset;
+        public ushort HeightOffset;
     }
 
     public class GIFMaker
     {
-        private DirectoryInfo _outputPath;
-        private List<Pixel> _colorTable;
-        private List<Frame> _frames;
+        private DirectoryInfo _outputPath;        
         private Dictionary<Pixel, int> _pixelToColorTableMap;
 
+        public List<Pixel> ColorTable;
+        public List<Frame> Frames;
         public ushort Width;
         public ushort Height;
         public bool ShouldRepeat;
+        public string fileOutputPath;
 
         public GIFMaker()
         {
             _outputPath = new DirectoryInfo(AppContext.BaseDirectory);
-            _colorTable = new List<Pixel>();
-            _frames = new List<Frame>();
+            ColorTable = new List<Pixel>();
+            Frames = new List<Frame>();
             _pixelToColorTableMap = new Dictionary<Pixel, int>();
         }
 
         public void CreateGIF()
         {
-            if (!_colorTable.Any())
+            if (!ColorTable.Any())
             {
                 throw new Exception("GIFMaker has no color table!");
             }
-            if (!_frames.Any())
+            if (!Frames.Any())
             {
                 throw new Exception("GIFMaker has no frames!");
             }
@@ -346,26 +416,35 @@ namespace XmasTreeGif
             {
                 throw new Exception("Width or Height cannot equal zero!");
             }
-
+            if (string.IsNullOrEmpty(fileOutputPath))
+            {
+                throw new Exception("File output path cannot be empty!");
+            }
 
             // Create the .GIF
-            using (FileStream fileStream = new FileStream("", FileMode.Create))
+            CreatePixelToColorTableMap();
+
+            using (FileStream fileStream = new FileStream(fileOutputPath, FileMode.Create))
             using (BinaryWriter output = new BinaryWriter(fileStream))
             {
                 output.Seek(0, SeekOrigin.Begin);
 
                 WriteHeader(output);
                 WriteLogicalScreenDescriptor(output);
+                WriteGlobalColorTable(output);                
                 WriteApplicationExtension(output, ShouldRepeat);
 
                 // Need to write these values for each frame
                 string LZWImageData = string.Empty;
-                for (int i = 0; i < _frames.Count; i++)
+                for (int i = 0; i < Frames.Count; i++)
                 {
-                    WriteGraphicControlExtension(output, _frames[i].AnimationDelay);
-                    WriteImageDescriptor(output, _frames[i]);
-                    LZWImageData = CreateLZWEncodedImageData(_frames[i].Pixels);
+                    WriteGraphicControlExtension(output, Frames[i].AnimationDelay);
+                    WriteImageDescriptor(output, Frames[i]);
+                    LZWImageData = CreateLZWEncodedImageData(Frames[i].Pixels);
+                    WriteLZWEncodedImageData(output, LZWImageData);
                 }
+                
+                output.Write(Convert.ToByte(0x3b)); // Termination byte
             }
         }
 
@@ -375,19 +454,19 @@ namespace XmasTreeGif
         /// </summary>
         private void CreatePixelToColorTableMap()
         {
-            for (int i = 0; i < _frames.Count; i++)
-                for (int j = 0; j < _frames[i].Pixels.Count; j++)
-                    for (int k = 0; k < _colorTable.Count; k++)
+            for (int i = 0; i < Frames.Count; i++)
+                for (int j = 0; j < Frames[i].Pixels.Count; j++)
+                    for (int k = 0; k < ColorTable.Count; k++)
                     {
                         // If the colors match
-                        if (_frames[i].Pixels[j].Red == _colorTable[k].Red &&
-                            _frames[i].Pixels[j].Green == _colorTable[k].Green &&
-                            _frames[i].Pixels[j].Blue == _colorTable[k].Blue)
+                        if (Frames[i].Pixels[j].Red == ColorTable[k].Red &&
+                            Frames[i].Pixels[j].Green == ColorTable[k].Green &&
+                            Frames[i].Pixels[j].Blue == ColorTable[k].Blue)
                         {
                             // Only add mapping if it doesn't already exist
-                            if (!_pixelToColorTableMap.ContainsKey(_frames[i].Pixels[j]))
+                            if (!_pixelToColorTableMap.ContainsKey(Frames[i].Pixels[j]))
                             {
-                                _pixelToColorTableMap.Add(_frames[i].Pixels[j], k);
+                                _pixelToColorTableMap.Add(Frames[i].Pixels[j], k);
                             }
                         }
                     }
@@ -475,7 +554,7 @@ namespace XmasTreeGif
             byte ret = 1;
 
             // log2(total colors) - 1
-            ret = (byte)Math.Round(Math.Log((double)_colorTable.Count, 2.0) - 1.0);
+            ret = (byte)Math.Round(Math.Log((double)ColorTable.Count, 2.0) - 1.0);
 
             return new BitArray(new byte[1] { ret });
         }
@@ -488,11 +567,11 @@ namespace XmasTreeGif
             //      C2 red value, C2 green value, C2 blue value, 
             //      ...
 
-            for (int i = 0; i < _colorTable.Count; i++)
+            for (int i = 0; i < ColorTable.Count; i++)
             {
-                output.Write(_colorTable[i].Red);
-                output.Write(_colorTable[i].Green);
-                output.Write(_colorTable[i].Blue);
+                output.Write(ColorTable[i].Red);
+                output.Write(ColorTable[i].Green);
+                output.Write(ColorTable[i].Blue);
             }
         }
 
@@ -657,7 +736,7 @@ namespace XmasTreeGif
             string encodedImageData; // What we will return; LZW compressed values of our image data
 
             w = _pixelToColorTableMap[imageData[0]].ToString();
-            encodedImageData = ConvertToBinaryString(_colorTable.Count, codeSize); // First piece of encoded data must be the clear code
+            encodedImageData = ConvertToBinaryString(ColorTable.Count, codeSize); // First piece of encoded data must be the clear code
 
             for (int l = 1; l < imageData.Count; l++)
             {
@@ -701,7 +780,7 @@ namespace XmasTreeGif
             }
 
             // Add the end of information code, because we've reached the end of the data
-            encodedImageData = ConvertToBinaryString(_colorTable.Count + 1, codeSize) + encodedImageData;
+            encodedImageData = ConvertToBinaryString(ColorTable.Count + 1, codeSize) + encodedImageData;
 
             return encodedImageData;
         }
@@ -732,7 +811,7 @@ namespace XmasTreeGif
             //      4      clear code
             //      5      end of information code
 
-            int sizeOfColorTable = _colorTable.Count;
+            int sizeOfColorTable = ColorTable.Count;
             Dictionary<string, int> dictionary = new Dictionary<string, int>();
 
             // Write all color codes to the dictionary
@@ -755,28 +834,64 @@ namespace XmasTreeGif
         /// </summary>
         private string ConvertToBinaryString(int codeValue, double codeSize)
         {
-            // The codeSize determines how many bits we need
-            // to return
+            // The codeSize determines how many bits we need to return
             return Convert.ToString(((byte)codeValue), 2).PadLeft((int)codeSize, '0');
         }
 
+        /// <summary>
+        ///     Writes the LZW encoded image data to the
+        ///     .GIF file.
+        /// </summary>
+        /// <param name="output"></param>
+        /// <param name="LZWEncodedImageData"></param>
         private void WriteLZWEncodedImageData(BinaryWriter output, string LZWEncodedImageData)
-        {
-            //result = LZW(pixelData);
-
+        {            
+            // The encoded image data is preceeded by the LZW minimum code size,
+            // which is two. Followed by the number of bytes in a sub-block. A 
+            // sub-block consists of 1-255 bytes in length (and is the lzw encoded
+            // image data). 
+            // A .GIF can have multiple sub-blocks encoded in the .GIF. Each sub-block
+            // must first have the number of bytes the sub-block encoded preceeding the
+            // sub-block. A terminator byte of 0 ends all LZW encoded image data.
 
             byte[] bytes = GetLZWEncodedImageDataBytes(LZWEncodedImageData);
-            output.Write(Convert.ToByte(2)); // lzw minimum code size
-            output.Write(Convert.ToByte(bytes.Length)); // number of bytes in sub-block
-            for (int i = 0; i < bytes.Length; i++)
+
+            output.Write(Convert.ToByte(2)); // The LZW minimum code size
+
+            int remainingBytes = GetRemainingBytesInSubBlock(bytes, 0);
+            bool writeByteLength = true;
+            for (int i = 0; i < remainingBytes; i++)
             {
+                if (writeByteLength)
+                {
+                    output.Write(Convert.ToByte(remainingBytes));
+                    writeByteLength = false;
+                }
+
                 output.Write(bytes[i]);
+
+                // Write next sub-block, if applicable
+                if (i + 1 == remainingBytes &&
+                    GetRemainingBytesInSubBlock(bytes, i + 1) > 0)
+                {
+                    remainingBytes = GetRemainingBytesInSubBlock(bytes, i + 1);
+                    writeByteLength = true;
+                }
             }
-            output.Write(Convert.ToByte(0));
+            
+            output.Write((byte)0); // Termination byte
         }
 
+        /// <summary>
+        ///     Returns byte data that is used when saving image data
+        ///     in a .GIF file.
+        /// </summary>
+        /// <param name="LZWEncodedImageData"></param>
+        /// <returns></returns>
         private byte[] GetLZWEncodedImageDataBytes(string LZWEncodedImageData)
         {
+            // Add encoded image data from the end of the value (hightest byte order)
+            // to the beginning of the value (lowest byte order)
             List<byte> returnMe = new List<byte>();
             int pos = LZWEncodedImageData.Length - 1;
             string working = string.Empty;
@@ -785,6 +900,7 @@ namespace XmasTreeGif
             {
                 working = LZWEncodedImageData[pos] + working;
 
+                // Every 8 bits, create a byte
                 if (working.Length == 8)
                 {
                     returnMe.Add(Convert.ToByte(working, 2));
@@ -794,7 +910,8 @@ namespace XmasTreeGif
                 pos--;
             }
 
-            // pickup runoff
+            // If we do not have bits to fill the entire byte,
+            // fill the last byte with zeroes
             if (working.Length < 8)
             {
                 working = working.PadLeft(8, '0');
@@ -802,6 +919,41 @@ namespace XmasTreeGif
             }
 
             return returnMe.ToArray();
+        }
+
+        /// <summary>
+        ///     Returns the number of bytes that belong
+        ///     in this sub-block, starting at the <paramref name="startIndex"/>.
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <param name="startIndex"></param>
+        /// <returns></returns>
+        private int GetRemainingBytesInSubBlock(byte[] bytes, int startIndex)
+        {
+            // Simple case, return the number of bytes
+            // if our image data only fits into one sub-block
+            if (bytes.Length <= 255)
+            {
+                return bytes.Length;
+            }
+
+            // If we've ran out of bytes, return 0
+            // (termination value)
+            if (bytes.Length - 1 == startIndex)
+            {
+                return 0;
+            }
+
+            // Handle images that require multiple sub-blocks
+            // of data
+            if (bytes.Length - startIndex > 255)
+            {
+                return 255;
+            }
+            else
+            {
+                return bytes.Length - startIndex;
+            }
         }
     }
 }
