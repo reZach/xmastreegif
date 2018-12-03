@@ -9,358 +9,87 @@ namespace XmasTreeGif
 {
     class Program
     {
-
         static void Main(string[] args)
         {
-            List<Pixel> colorTable = new List<Pixel>
+            Dictionary<string, Pixel> ct = new Dictionary<string, Pixel>
             {
-                new Pixel
-                {
-                    Red = 255,
-                    Green = 255,
-                    Blue = 255
-                },
-                new Pixel
-                {
-                    Red = 255,
-                    Green = 0,
-                    Blue = 0
-                },
-                new Pixel
-                {
-                    Red = 0,
-                    Green = 0,
-                    Blue = 255
-                },
-                new Pixel
-                {
-                    Red = 0,
-                    Green = 0,
-                    Blue = 0
-                }
+                { "o", new Pixel { Red = 185, Green = 122, Blue = 86 } }, // brown
+                { "r", new Pixel { Red = 236, Green = 28, Blue = 36 } }, // red
+                { "g", new Pixel { Red = 14, Green = 209, Blue = 69 } }, // green
+                { "b", new Pixel { Red = 0, Green = 0, Blue = 0 } } // black
             };
             List<Frame> frames = new List<Frame>
             {
                 new Frame
                 {
-                    Width = 2,
-                    Height = 2,
+                    Width = 20,
+                    Height = 20,
                     AnimationDelay = 100,
                     Pixels = new List<Pixel>
                     {
-                        colorTable[0],
-                        colorTable[0],
-                        colorTable[0],
-                        colorTable[0]
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["r"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["r"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["r"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["r"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["r"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["r"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["r"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["o"], ct["o"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["o"], ct["o"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
                     }
                 },
                 new Frame
                 {
-                    Width = 2,
-                    Height = 2,
+                    Width = 20,
+                    Height = 20,
                     AnimationDelay = 100,
                     Pixels = new List<Pixel>
                     {
-                        colorTable[1],
-                        colorTable[1],
-                        colorTable[1],
-                        colorTable[1]
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["r"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["r"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["r"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["r"], ct["g"], ct["r"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["r"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["r"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["g"], ct["r"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["g"], ct["g"], ct["g"], ct["g"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["o"], ct["o"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["o"], ct["o"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
+                        ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
                     }
-                }
+                },
             };
             GIFMaker maker = new GIFMaker
             {
-                fileOutputPath = @"D:\income\xmas tree gif\XmasTreeGif\XmasTreeGif\file2.gif",
-                Width = 2,
-                Height = 2,
+                FileOutputPath = new DirectoryInfo(@"D:\income\xmas tree gif\XmasTreeGif\XmasTreeGif\file2.gif"),
+                Width = 20,
+                Height = 20,
                 ShouldRepeat = true,
-                ColorTable = colorTable,
+                ColorTable = ct,
                 Frames = frames
             };
 
             maker.CreateGIF();
-            return;
-
-            using (FileStream fs = new FileStream(@"C:\proj\xmas tree gif\XmasTreeGif\XmasTreeGif\file.gif", FileMode.Create))
-            {
-                using (BinaryWriter outputFile = new BinaryWriter(fs))
-                {
-                    outputFile.Seek(0, SeekOrigin.Begin);
-                    // http://www.matthewflickinger.com/lab/whatsinagif/bits_and_bytes.asp
-
-                    // Header                
-                    outputFile.Write(new char[3] { 'G', 'I', 'F' }); // signature                    
-                    outputFile.Write(new char[3] { '8', '9', 'a' }); // gif format
-                    outputFile.Write(Convert.ToInt16(2)); // screen width
-                    outputFile.Write(Convert.ToInt16(2)); // screen height
-
-                    BitArray array = new BitArray(new byte[1]);
-                    array[7] = true; // global color table flag
-                    array[6] = true; array[5] = true; array[4] = true; // color resolution
-                    array[3] = false; // sort flag
-                    array[2] = false; array[1] = false; array[0] = true; // global color table size
-                    byte[] bytes = new byte[1];
-                    array.CopyTo(bytes, 0);
-                    outputFile.Write(bytes);
-
-                    outputFile.Write(Convert.ToByte(0)); // background color index
-                    outputFile.Write(Convert.ToByte(0)); // pixel aspect ratio
-
-                    // global color table
-                    outputFile.Write(Convert.ToByte(255)); // white
-                    outputFile.Write(Convert.ToByte(255));
-                    outputFile.Write(Convert.ToByte(255));
-                    outputFile.Write(Convert.ToByte(255)); // red
-                    outputFile.Write(Convert.ToByte(0));
-                    outputFile.Write(Convert.ToByte(0));
-                    outputFile.Write(Convert.ToByte(0)); // blue
-                    outputFile.Write(Convert.ToByte(0));
-                    outputFile.Write(Convert.ToByte(255));
-                    outputFile.Write(Convert.ToByte(0)); // black
-                    outputFile.Write(Convert.ToByte(0));
-                    outputFile.Write(Convert.ToByte(0));
-
-                    // application extension (gives us animation)
-                    outputFile.Write(Convert.ToByte(0x21)); // gif extension code
-                    outputFile.Write(Convert.ToByte(0xff)); // application extension label
-                    outputFile.Write(Convert.ToByte(0x0b)); // length of application block (to follow)
-                    outputFile.Write(Convert.ToByte('N'));
-                    outputFile.Write(Convert.ToByte('E'));
-                    outputFile.Write(Convert.ToByte('T'));
-                    outputFile.Write(Convert.ToByte('S'));
-                    outputFile.Write(Convert.ToByte('C'));
-                    outputFile.Write(Convert.ToByte('A'));
-                    outputFile.Write(Convert.ToByte('P'));
-                    outputFile.Write(Convert.ToByte('E'));
-                    outputFile.Write(Convert.ToByte('2'));
-                    outputFile.Write(Convert.ToByte('.'));
-                    outputFile.Write(Convert.ToByte('0'));
-                    outputFile.Write(Convert.ToByte(3)); // length of data sub-block (3 bytes of data to follow)
-                    outputFile.Write(Convert.ToByte(1));
-                    outputFile.Write(Convert.ToByte(0xff)); // times the gif will loop
-                    outputFile.Write(Convert.ToByte(0xff));
-                    outputFile.Write(Convert.ToByte(0)); // data sub-block terminator
-
-                    // graphic control extension
-                    outputFile.Write(Convert.ToByte(0x21)); // extension introducer
-                    outputFile.Write(Convert.ToByte(0xf9)); // graphic control label
-                    outputFile.Write(Convert.ToByte(4)); // byte size
-                    outputFile.Write(Convert.ToByte(4)); // packed field
-                    outputFile.Write(Convert.ToInt16(100)); // delay time, in ms
-                    outputFile.Write(Convert.ToByte(0)); // transparent color index
-                    outputFile.Write(Convert.ToByte(0)); // block terminator
-
-                    // image descriptor
-                    outputFile.Write(Convert.ToByte(0x2c)); // img separator character
-                    outputFile.Write(Convert.ToInt16(0)); // img left position
-                    outputFile.Write(Convert.ToInt16(0)); // img top positon                    
-                    outputFile.Write(Convert.ToInt16(2)); // img width                    
-                    outputFile.Write(Convert.ToInt16(2)); // img height                    
-                    array = new BitArray(new byte[1]);
-                    array[0] = false; // local color table present
-                    array[1] = false; // img not interlaced
-                    array[2] = false; // sort flag
-                    array[5] = false; // size of local color table
-                    array[6] = false;
-                    array[7] = false;
-                    bytes = new byte[1];
-                    array.CopyTo(bytes, 0);
-                    outputFile.Write(bytes);
-
-
-                    // image data; lzw                    
-                    List<int> pixelData = new List<int>();
-                    //pixelData.Add(0);
-                    //pixelData.Add(1);
-                    //pixelData.Add(1);
-                    //pixelData.Add(1);
-                    //pixelData.Add(1);
-                    //pixelData.Add(1);
-                    //pixelData.Add(2);
-                    //pixelData.Add(2);
-                    //pixelData.Add(2);
-                    //pixelData.Add(2);
-                    //pixelData.Add(2);
-                    //pixelData.Add(1);
-                    //pixelData.Add(1);
-                    //pixelData.Add(1);
-                    //pixelData.Add(1);
-                    //pixelData.Add(1);
-                    //pixelData.Add(2);
-                    //pixelData.Add(2);
-                    //pixelData.Add(2);
-                    //pixelData.Add(2);
-                    //pixelData.Add(2);
-                    //pixelData.Add(3);
-                    //pixelData.Add(3);
-                    //pixelData.Add(3);
-                    //pixelData.Add(3);
-                    //pixelData.Add(3);
-                    pixelData.Add(1);
-                    pixelData.Add(1);
-                    pixelData.Add(1);
-                    pixelData.Add(1);
-
-                    string result = LZW(pixelData);
-
-                    bytes = GetBytes(result);
-                    outputFile.Write(Convert.ToByte(2)); // lzw minimum code size
-                    outputFile.Write(Convert.ToByte(bytes.Length)); // number of bytes in sub-block
-                    for (int i = 0; i < bytes.Length; i++)
-                    {
-                        outputFile.Write(bytes[i]);
-                    }
-                    outputFile.Write(Convert.ToByte(0));
-
-
-                    // img 2
-                    // graphic control extension
-                    outputFile.Write(Convert.ToByte(0x21)); // extension introducer
-                    outputFile.Write(Convert.ToByte(0xf9)); // graphic control label
-                    outputFile.Write(Convert.ToByte(4)); // byte size
-                    outputFile.Write(Convert.ToByte(4)); // packed field
-                    outputFile.Write(Convert.ToInt16(100)); // delay time, in ms
-                    outputFile.Write(Convert.ToByte(0)); // transparent color index
-                    outputFile.Write(Convert.ToByte(0)); // block terminator
-
-                    // image descriptor
-                    outputFile.Write(Convert.ToByte(0x2c)); // img separator character
-                    outputFile.Write(Convert.ToInt16(0)); // img left position
-                    outputFile.Write(Convert.ToInt16(0)); // img top positon                    
-                    outputFile.Write(Convert.ToInt16(2)); // img width                    
-                    outputFile.Write(Convert.ToInt16(2)); // img height                    
-                    array = new BitArray(new byte[1]);
-                    array[0] = false; // local color table present
-                    array[1] = false; // img not interlaced
-                    array[2] = false; // sort flag
-                    array[5] = false; // size of local color table
-                    array[6] = false;
-                    array[7] = false;
-                    bytes = new byte[1];
-                    array.CopyTo(bytes, 0);
-                    outputFile.Write(bytes);
-
-
-                    // image data; lzw                    
-                    pixelData = new List<int>();
-                    pixelData.Add(2);
-                    pixelData.Add(2);
-                    pixelData.Add(2);
-                    pixelData.Add(2);
-
-                    result = LZW(pixelData);
-
-                    bytes = GetBytes(result);
-                    outputFile.Write(Convert.ToByte(2)); // lzw minimum code size
-                    outputFile.Write(Convert.ToByte(bytes.Length)); // number of bytes in sub-block
-                    for (int i = 0; i < bytes.Length; i++)
-                    {
-                        outputFile.Write(bytes[i]);
-                    }
-                    outputFile.Write(Convert.ToByte(0));
-
-                    outputFile.Write(Convert.ToByte(0x3b)); // terminator character
-                }
-            }
-        }
-
-
-        // https://rosettacode.org/wiki/LZW_compression#C.23
-        static string LZW(List<int> pixelImageData)
-        {
-            // build the dictionary
-            Dictionary<string, int> dictionary = new Dictionary<string, int>();
-            for (int i = 0; i < pixelImageData.Count; i++)
-            {
-                dictionary.Add(i.ToString(), i);
-            }
-
-            dictionary.Add(pixelImageData.Count.ToString(), pixelImageData.Count); //clear
-            dictionary.Add((pixelImageData.Count + 1).ToString(), pixelImageData.Count + 1); //eoi
-
-            string w = pixelImageData[0].ToString();// string.Empty;
-                                                    //List<int> compressed = new List<int> { pixelImageData.Count };
-
-            double codeSize = 3.0; // this is in bits
-            string returnMe = Convert.ToString(((byte)(pixelImageData.Count)), 2).PadLeft((int)codeSize, '0');
-            int k;
-
-            for (int l = 1; l < pixelImageData.Count; l++)
-            {
-                k = pixelImageData[l];
-
-                string wc = w + k;
-                if (dictionary.ContainsKey(wc))
-                {
-                    w = wc;
-                }
-                else
-                {
-                    // add a row for index buffer + k
-                    dictionary.Add(wc, dictionary.Count);
-
-                    // output the code for just the index buffer to our code stream
-                    //compressed.Add(dictionary[w]);
-                    returnMe = Convert.ToString(((byte)dictionary[w]), 2).PadLeft((int)codeSize, '0') + returnMe;
-
-                    // index buffer set to k
-                    w = k.ToString();
-
-                    // change code size
-                    if (Math.Pow(2.0, codeSize) - 1 == dictionary[w])
-                    {
-                        codeSize += 1.0;
-                    }
-                }
-
-                // If we have 4096 codes, we can't store another one,
-                // so we need to clear out our code table as we continue
-                if (dictionary.Count == 4096)
-                {
-
-                }
-            }
-
-            // write remaining output if necessary
-            if (!string.IsNullOrEmpty(w))
-            {
-                //compressed.Add(dictionary[w]);
-                returnMe = Convert.ToString(((byte)dictionary[w]), 2).PadLeft((int)codeSize, '0') + returnMe;
-            }
-
-            //compressed.Add(dictionary["5"]);
-            returnMe = Convert.ToString(((byte)(pixelImageData.Count + 1)), 2).PadLeft((int)codeSize, '0') + returnMe;
-
-            return returnMe; //compressed;
-        }
-
-        static byte[] GetBytes(string bitString)
-        {
-            List<byte> returnMe = new List<byte>();
-            int pos = bitString.Length - 1;
-            string working = string.Empty;
-
-            while (pos >= 0)
-            {
-                working = bitString[pos] + working;
-
-                if (working.Length == 8)
-                {
-                    returnMe.Add(Convert.ToByte(working, 2));
-                    working = string.Empty;
-                }
-
-                pos--;
-            }
-
-            // pickup runoff
-            if (working.Length < 8)
-            {
-                working = working.PadLeft(8, '0');
-                returnMe.Add(Convert.ToByte(working, 2));
-            }
-
-            return returnMe.ToArray();
         }
     }
 
@@ -383,23 +112,23 @@ namespace XmasTreeGif
     }
 
     public class GIFMaker
-    {
-        private DirectoryInfo _outputPath;        
+    {        
         private Dictionary<Pixel, int> _pixelToColorTableMap;
 
-        public List<Pixel> ColorTable;
+        public DirectoryInfo FileOutputPath;
+        public Dictionary<string, Pixel> ColorTable;
         public List<Frame> Frames;
         public ushort Width;
         public ushort Height;
         public bool ShouldRepeat;
-        public string fileOutputPath;
 
         public GIFMaker()
         {
-            _outputPath = new DirectoryInfo(AppContext.BaseDirectory);
-            ColorTable = new List<Pixel>();
-            Frames = new List<Frame>();
             _pixelToColorTableMap = new Dictionary<Pixel, int>();
+
+            FileOutputPath = new DirectoryInfo(AppContext.BaseDirectory);
+            ColorTable = new Dictionary<string, Pixel>();
+            Frames = new List<Frame>();            
         }
 
         public void CreateGIF()
@@ -416,15 +145,11 @@ namespace XmasTreeGif
             {
                 throw new Exception("Width or Height cannot equal zero!");
             }
-            if (string.IsNullOrEmpty(fileOutputPath))
-            {
-                throw new Exception("File output path cannot be empty!");
-            }
 
             // Create the .GIF
             CreatePixelToColorTableMap();
 
-            using (FileStream fileStream = new FileStream(fileOutputPath, FileMode.Create))
+            using (FileStream fileStream = new FileStream(FileOutputPath.FullName, FileMode.Create))
             using (BinaryWriter output = new BinaryWriter(fileStream))
             {
                 output.Seek(0, SeekOrigin.Begin);
@@ -454,22 +179,10 @@ namespace XmasTreeGif
         /// </summary>
         private void CreatePixelToColorTableMap()
         {
-            for (int i = 0; i < Frames.Count; i++)
-                for (int j = 0; j < Frames[i].Pixels.Count; j++)
-                    for (int k = 0; k < ColorTable.Count; k++)
-                    {
-                        // If the colors match
-                        if (Frames[i].Pixels[j].Red == ColorTable[k].Red &&
-                            Frames[i].Pixels[j].Green == ColorTable[k].Green &&
-                            Frames[i].Pixels[j].Blue == ColorTable[k].Blue)
-                        {
-                            // Only add mapping if it doesn't already exist
-                            if (!_pixelToColorTableMap.ContainsKey(Frames[i].Pixels[j]))
-                            {
-                                _pixelToColorTableMap.Add(Frames[i].Pixels[j], k);
-                            }
-                        }
-                    }
+            for (int i = 0; i < ColorTable.Count; i++)
+            {
+                _pixelToColorTableMap.Add(ColorTable[ColorTable.Keys.ElementAt(i)], i);
+            }
         }
 
         /// <summary>
@@ -515,7 +228,7 @@ namespace XmasTreeGif
             // Packed field
             BitArray array = new BitArray(new byte[1]);
             BitArray GCTS = LogicalScreenDescriptorGlobalColorTableSize();
-            array[2] = GCTS[1]; array[1] = GCTS[1]; array[0] = GCTS[0]; // Global color table size
+            array[2] = GCTS[2]; array[1] = GCTS[1]; array[0] = GCTS[0]; // Global color table size
             array[3] = false; // Sort flag
             array[6] = true; array[5] = true; array[4] = true; // Color resolution (64 colors)
             array[7] = true; // Global color table flag ("1" since we are using a global color table)
@@ -569,9 +282,9 @@ namespace XmasTreeGif
 
             for (int i = 0; i < ColorTable.Count; i++)
             {
-                output.Write(ColorTable[i].Red);
-                output.Write(ColorTable[i].Green);
-                output.Write(ColorTable[i].Blue);
+                output.Write(ColorTable[ColorTable.Keys.ElementAt(i)].Red);
+                output.Write(ColorTable[ColorTable.Keys.ElementAt(i)].Green);
+                output.Write(ColorTable[ColorTable.Keys.ElementAt(i)].Blue);
             }
         }
 
@@ -759,7 +472,7 @@ namespace XmasTreeGif
                     w = k.ToString();
 
                     // Change code size (if applicable)
-                    if (Math.Pow(2.0, codeSize) - 1 == dictionary[w])
+                    if (Math.Pow(2.0, codeSize) == dictionary[wc])
                     {
                         codeSize += 1.0;
                     }
@@ -912,7 +625,7 @@ namespace XmasTreeGif
 
             // If we do not have bits to fill the entire byte,
             // fill the last byte with zeroes
-            if (working.Length < 8)
+            if (working.Length > 1 && working.Length < 8)
             {
                 working = working.PadLeft(8, '0');
                 returnMe.Add(Convert.ToByte(working, 2));
@@ -934,14 +647,7 @@ namespace XmasTreeGif
             // if our image data only fits into one sub-block
             if (bytes.Length <= 255)
             {
-                return bytes.Length;
-            }
-
-            // If we've ran out of bytes, return 0
-            // (termination value)
-            if (bytes.Length - 1 == startIndex)
-            {
-                return 0;
+                return bytes.Length - startIndex;
             }
 
             // Handle images that require multiple sub-blocks
