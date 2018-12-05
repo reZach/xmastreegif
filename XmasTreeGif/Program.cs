@@ -81,7 +81,7 @@ namespace XmasTreeGif
             };
             GIFMaker maker = new GIFMaker
             {
-                FileOutputPath = new DirectoryInfo(@"D:\income\xmas tree gif\XmasTreeGif\XmasTreeGif\file2.gif"),
+                FileOutputPath = new DirectoryInfo(@"C:\gifmaker\xmastree.gif"),
                 Width = 20,
                 Height = 20,
                 ShouldRepeat = true,
@@ -93,33 +93,104 @@ namespace XmasTreeGif
         }
     }
 
+    /// <summary>
+    ///     Encapsulates information about a pixel.
+    /// </summary>
     public struct Pixel
     {
+        /// <summary>
+        ///     The red color (0-255) of a pixel.
+        /// </summary>
         public byte Red;
+
+        /// <summary>
+        ///     The green color (0-255) of a pixel.
+        /// </summary>
         public byte Green;
+
+        /// <summary>
+        ///     The blue color (0-255) of a pixel.
+        /// </summary>
         public byte Blue;
     }
 
+    /// <summary>
+    ///     Encapsulates information about a frame
+    ///     within a .GIF.
+    /// </summary>
     public struct Frame
     {
+        /// <summary>
+        ///     The delay, in centiseconds, that before
+        ///     displaying this frame.
+        /// </summary>
         public ushort AnimationDelay;
+
+        /// <summary>
+        ///     Image data for the frame; beginning at the
+        ///     most top-left pixel to the bottom-right pixel
+        ///     (in rows).
+        /// </summary>
         public List<Pixel> Pixels;
 
+        /// <summary>
+        ///     The width of the frame.
+        /// </summary>
         public ushort Width;
+
+        /// <summary>
+        ///     The height of the frame.
+        /// </summary>
         public ushort Height;
+
+        /// <summary>
+        ///     How many pixels we should start off the x-origin
+        ///     of the .GIF file.
+        /// </summary>
         public ushort WidthOffset;
+
+        /// <summary>
+        ///     How many pixels we should start off the y-origin
+        ///     of the .GIF file.
+        /// </summary>
         public ushort HeightOffset;
     }
 
+    /// <summary>
+    ///     Encapsulates information to make a .GIF file.
+    /// </summary>
     public class GIFMaker
     {        
         private Dictionary<Pixel, int> _pixelToColorTableMap;
 
+        /// <summary>
+        ///     The output path of the .GIF that is created.
+        /// </summary>
         public DirectoryInfo FileOutputPath;
+
+        /// <summary>
+        ///     The global color table that is used.
+        /// </summary>
         public Dictionary<string, Pixel> ColorTable;
+
+        /// <summary>
+        ///     Frames that encapsulate a given .GIF.
+        /// </summary>
         public List<Frame> Frames;
+
+        /// <summary>
+        ///     The width of the .GIF file.
+        /// </summary>
         public ushort Width;
+
+        /// <summary>
+        ///     The height of the .GIF file.
+        /// </summary>
         public ushort Height;
+
+        /// <summary>
+        ///     If the .GIF should repeat it's animation loop.        
+        /// </summary>
         public bool ShouldRepeat;
 
         public GIFMaker()
@@ -131,6 +202,9 @@ namespace XmasTreeGif
             Frames = new List<Frame>();            
         }
 
+        /// <summary>
+        ///     Creates and writes .GIF-encoded data to a given file.
+        /// </summary>
         public void CreateGIF()
         {
             if (!ColorTable.Any())
@@ -145,9 +219,15 @@ namespace XmasTreeGif
             {
                 throw new Exception("Width or Height cannot equal zero!");
             }
+            if (!FileOutputPath.Parent.Exists)
+            {
+                throw new Exception($"The directory '{FileOutputPath.Parent}' does not exist, the .GIF file could not be made!");
+            }
 
             // Create the .GIF
             CreatePixelToColorTableMap();
+
+            Console.WriteLine($"Creating a new .GIF at the following path: {FileOutputPath.FullName}.");
 
             using (FileStream fileStream = new FileStream(FileOutputPath.FullName, FileMode.Create))
             using (BinaryWriter output = new BinaryWriter(fileStream))
