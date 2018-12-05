@@ -5,10 +5,4 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="b.gif" />
-    <None Remove="file.gif" />
-    <None Remove="file2.gif" />
-  </ItemGroup>
-
 </Project>
