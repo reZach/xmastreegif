@@ -16,7 +16,7 @@ namespace XmasTreeGif
                 { "o", new Pixel { Red = 185, Green = 122, Blue = 86 } }, // brown
                 { "r", new Pixel { Red = 236, Green = 28, Blue = 36 } }, // red
                 { "g", new Pixel { Red = 14, Green = 209, Blue = 69 } }, // green
-                { "b", new Pixel { Red = 0, Green = 0, Blue = 0 } } // black
+                { "b", new Pixel { Red = 0, Green = 0, Blue = 0 } }, // black
             };
             List<Frame> frames = new List<Frame>
             {
@@ -77,8 +77,9 @@ namespace XmasTreeGif
                         ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
                         ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"], ct["b"],
                     }
-                },
+                }
             };
+            
             GIFMaker maker = new GIFMaker
             {
                 FileOutputPath = new DirectoryInfo(@"C:\gifmaker\xmastree.gif"),
@@ -224,9 +225,9 @@ namespace XmasTreeGif
                 throw new Exception($"The directory '{FileOutputPath.Parent}' does not exist, the .GIF file could not be made!");
             }
 
-            // Create the .GIF
             CreatePixelToColorTableMap();
 
+            // Create the .GIF
             Console.WriteLine($"Creating a new .GIF at the following path: {FileOutputPath.FullName}.");
 
             using (FileStream fileStream = new FileStream(FileOutputPath.FullName, FileMode.Create))
@@ -310,7 +311,7 @@ namespace XmasTreeGif
             BitArray GCTS = LogicalScreenDescriptorGlobalColorTableSize();
             array[2] = GCTS[2]; array[1] = GCTS[1]; array[0] = GCTS[0]; // Global color table size
             array[3] = false; // Sort flag
-            array[6] = true; array[5] = true; array[4] = true; // Color resolution (64 colors)
+            array[6] = true; array[5] = true; array[4] = true; // Color resolution (64 colors)            
             array[7] = true; // Global color table flag ("1" since we are using a global color table)
 
             byte[] bytes = new byte[1];
@@ -321,7 +322,7 @@ namespace XmasTreeGif
             output.Write((byte)0); // Pixel aspect ratio
         }
 
-        private BitArray LogicalScreenDescriptorGlobalColorTableSize()
+        private BitArray LogicalScreenDescriptorGlobalColorTableSize(int? size = null)
         {
             // Global color table size is directly related to the number
             // of colors we can have in our .GIF. A .GIF can hold anywhere
@@ -345,9 +346,10 @@ namespace XmasTreeGif
             // colors we want to use
 
             byte ret = 1;
+            int total = size ?? ColorTable.Count; // Optionally pass in a size to get the GCTS
 
             // log2(total colors) - 1
-            ret = (byte)Math.Round(Math.Log((double)ColorTable.Count, 2.0) - 1.0);
+            ret = (byte)Math.Ceiling(Math.Log((double)total, 2.0) - 1.0);
 
             return new BitArray(new byte[1] { ret });
         }
@@ -365,6 +367,25 @@ namespace XmasTreeGif
                 output.Write(ColorTable[ColorTable.Keys.ElementAt(i)].Red);
                 output.Write(ColorTable[ColorTable.Keys.ElementAt(i)].Green);
                 output.Write(ColorTable[ColorTable.Keys.ElementAt(i)].Blue);
+            }
+
+            // Add additional placeholders if we do not have the same
+            // number of colors that match the GCTS (global color table size)
+            // 
+            // Please see the LogicalScreenDescriptorGlobalColorTableSize
+            // to see the number of colors we require for a given GCTS
+
+            BitArray GCTS = LogicalScreenDescriptorGlobalColorTableSize();
+            byte[] bytes = new byte[1];
+            GCTS.CopyTo(bytes, 0);
+
+            Pixel placeholder = new Pixel { Red = 0, Green = 0, Blue = 0 };
+
+            for (int i = ColorTable.Count; i < (int)Math.Pow(2.0, (bytes[0] + 1)); i++)
+            {
+                output.Write(placeholder.Red);
+                output.Write(placeholder.Green);
+                output.Write(placeholder.Blue);
             }
         }
 
@@ -523,13 +544,15 @@ namespace XmasTreeGif
             // will be placed in the .GIF file
 
             Dictionary<string, int> dictionary = LZWEncodedImageDataDictionary();
-            double codeSize = 3.0; // In bits; this value will grow as we enter in more codes in our code table
+            double codeSize = GetLZWStartingCodeSize(dictionary.Count); // In bits; this value will grow as we enter in more codes in our code table
             string w; // Holds a reference to the image data value we are looking at
             int k; // Holds a reference of the image data value (one past) w
             string encodedImageData; // What we will return; LZW compressed values of our image data
+            int clear = dictionary.Count - 2; // Holds the index for the clear code
+            int eoi = dictionary.Count - 1; // Holds the index for the end-of-information code
 
             w = _pixelToColorTableMap[imageData[0]].ToString();
-            encodedImageData = ConvertToBinaryString(ColorTable.Count, codeSize); // First piece of encoded data must be the clear code
+            encodedImageData = ConvertToBinaryString(clear, codeSize); // First piece of encoded data must be the clear code
 
             for (int l = 1; l < imageData.Count; l++)
             {
@@ -562,7 +585,12 @@ namespace XmasTreeGif
                 // so we need to clear out our code table as we continue
                 if (dictionary.Count >= 4096)
                 {
+                    // Output the clear code
+                    encodedImageData = ConvertToBinaryString(clear, codeSize) + encodedImageData;
+
+                    // Reset
                     dictionary = LZWEncodedImageDataDictionary();
+                    codeSize = GetLZWStartingCodeSize(dictionary.Count);
                 }
             }
 
@@ -573,9 +601,26 @@ namespace XmasTreeGif
             }
 
             // Add the end of information code, because we've reached the end of the data
-            encodedImageData = ConvertToBinaryString(ColorTable.Count + 1, codeSize) + encodedImageData;
+            encodedImageData = ConvertToBinaryString(eoi, codeSize) + encodedImageData;
 
             return encodedImageData;
+        }
+
+        /// <summary>
+        ///     Returns the starting LZW code size.
+        /// </summary>
+        /// <param name="imageDataDictionaryCount"></param>
+        /// <returns></returns>
+        private double GetLZWStartingCodeSize(int imageDataDictionaryCount)
+        {
+            // The relationship between LZW starting code size
+            // and the GCTS (global color table size) is:
+            //      GCTS + 1 = starting LZW code size
+            BitArray GCTS = LogicalScreenDescriptorGlobalColorTableSize(imageDataDictionaryCount);
+            byte[] bytes = new byte[1];
+            GCTS.CopyTo(bytes, 0);
+
+            return (double)bytes[0] + 1.0;
         }
 
         /// <summary>
@@ -613,9 +658,20 @@ namespace XmasTreeGif
                 dictionary.Add(i.ToString(), i);
             }
 
+            // Add additional placeholders if we do not have the same
+            // number of colors that match the GCTS (global color table size)
+            BitArray GCTS = LogicalScreenDescriptorGlobalColorTableSize();
+            byte[] bytes = new byte[1];
+            GCTS.CopyTo(bytes, 0);
+
+            for (int i = sizeOfColorTable; i < (int)Math.Pow(2.0, (bytes[0] + 1)); i++)
+            {
+                dictionary.Add(i.ToString(), i);
+            }
+
             // Add additional codes after
-            dictionary.Add(sizeOfColorTable.ToString(), sizeOfColorTable); // Clear color code
-            dictionary.Add((sizeOfColorTable + 1).ToString(), sizeOfColorTable + 1); // End of information code
+            dictionary.Add(dictionary.Count.ToString(), dictionary.Count); // Clear color code
+            dictionary.Add(dictionary.Count.ToString(), dictionary.Count); // End of information code
 
             return dictionary;
         }
@@ -649,7 +705,11 @@ namespace XmasTreeGif
 
             byte[] bytes = GetLZWEncodedImageDataBytes(LZWEncodedImageData);
 
-            output.Write(Convert.ToByte(2)); // The LZW minimum code size
+            byte[] lzwMinimumCodeSize = new byte[1];
+            LogicalScreenDescriptorGlobalColorTableSize(
+                    LZWEncodedImageDataDictionary().Count).CopyTo(lzwMinimumCodeSize, 0);
+
+            output.Write(lzwMinimumCodeSize[0]); // The LZW minimum code size
 
             int remainingBytes = GetRemainingBytesInSubBlock(bytes, 0);
             bool writeByteLength = true;
