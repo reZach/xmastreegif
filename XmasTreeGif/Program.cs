@@ -765,7 +765,7 @@ namespace XmasTreeGif
 
             // If we do not have bits to fill the entire byte,
             // fill the last byte with zeroes
-            if (working.Length > 1 && working.Length < 8)
+            if (working.Length >= 1 && working.Length < 8)
             {
                 working = working.PadLeft(8, '0');
                 returnMe.Add(Convert.ToByte(working, 2));
